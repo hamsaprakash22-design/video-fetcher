@@ -8,12 +8,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 
 @Service
 public class YouTubeFetchService {
 
     private final VideoRepository videoRepository;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${youtube.api.key}")
     private String apiKey;
@@ -21,7 +24,7 @@ public class YouTubeFetchService {
     @Value("${youtube.search.queries}")
     private String queries;
 
-    @Value("${youtube.fetch.max-results}")
+    @Value("${youtube.fetch.max-results:25}")
     private int maxResults;
 
     public YouTubeFetchService(VideoRepository videoRepository) {
@@ -29,9 +32,7 @@ public class YouTubeFetchService {
     }
 
     public void fetchAndSaveVideos() {
-
         String[] topics = queries.split(",");
-
         for (String topic : topics) {
             fetchForSingleTopic(topic.trim());
         }
@@ -44,18 +45,15 @@ public class YouTubeFetchService {
                         + "?part=snippet"
                         + "&type=video"
                         + "&order=date"
-                        + "&q=" + query
+                        + "&q=" + URLEncoder.encode(query, StandardCharsets.UTF_8)
                         + "&maxResults=" + maxResults
                         + "&key=" + apiKey;
 
         try {
-            RestTemplate restTemplate = new RestTemplate();
             String response = restTemplate.getForObject(url, String.class);
-
             JSONArray items = new JSONObject(response).getJSONArray("items");
 
             for (int i = 0; i < items.length(); i++) {
-
                 JSONObject item = items.getJSONObject(i);
                 String videoId = item.getJSONObject("id").getString("videoId");
 
@@ -79,7 +77,7 @@ public class YouTubeFetchService {
             }
 
         } catch (Exception e) {
-            System.out.println("Failed for topic: " + query + " → " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
