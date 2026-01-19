@@ -1,0 +1,13 @@
+# Secrets
+src/main/resources/application.properties
+
+# Build
+target/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
