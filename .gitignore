@@ -1,8 +1,11 @@
 # Secrets
-src/main/resources/application.properties
+.env
 
-# Build
+# Maven
 target/
+
+# Logs
+*.log
 
 # IDE
 .idea/
